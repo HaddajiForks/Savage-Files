@@ -152,11 +152,23 @@ module.exports = (db, bucket) => {
                 _id: { $in: userfiles.map(file => file.fileId) }
             }).toArray();
 
-            const fileList = files.map(file => ({
-                ID: file._id,
-                Filename: file.filename,
-                size: FormatFileSize(file.length)
-            }));
+            const fileDataMap = files.reduce((acc, fileDoc) => {
+                acc[fileDoc._id.toString()] = fileDoc; 
+                return acc;
+            }, {});
+
+            const fileList = userfiles.map(userFileEntry => {
+                const fileDoc = fileDataMap[userFileEntry.fileId.toString()];
+                
+                return {
+                    ID: userFileEntry.fileId,
+                    Filename: userFileEntry.file_name,
+                    views: userFileEntry.veiws,
+                    downloads: userFileEntry.downloads,
+                    size: userFileEntry.size,                    
+                    CreatedAt: fileDoc.uploadDate 
+                };
+            });
 
             res.status(200).send({files: fileList});
         } catch (error) {

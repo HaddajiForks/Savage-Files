@@ -7,7 +7,7 @@ const FilesSchema = new mongoose.Schema({
     size: {type: String},
     veiws: {type: Number, default: 0},
     downloads: {type: Number, default: 0},
-    createdAt: {type: Date, default: Date.now}
+    createdAt: {type: Date, default: Date.now()}
 });
 
 module.exports = mongoose.model('Files', FilesSchema);

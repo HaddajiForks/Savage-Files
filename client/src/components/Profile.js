@@ -14,6 +14,7 @@ function Profile() {
   const [uploading, setUpload] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
   const [file, setFile] = useState(null)
+  console.log(files);
 
   // Use the correct dependency array: files should probably be removed to prevent infinite re-fetches
   useEffect(() => {
@@ -50,10 +51,13 @@ function Profile() {
         fileInput.value = ""
         setSelectedFile(null)
         setFile(null)
-        Swal.fire("Uploaded!", "Your file has been uploaded successfully.", "success")
+        const result = await Swal.fire("Uploaded!", "Your file has been uploaded successfully.", "success")
+        if (result.isConfirmed) {
+            window.location.reload();
+        }
       } catch (error) {
-        // You might want to log the error for debugging: console.error(error)
-        Swal.fire("Error!", "There was an issue uploading your file.", "error")
+         Swal.fire("Error!", "There was an issue uploading your file.", "error");
+
       } finally {
         setUpload(false)
       }
@@ -85,7 +89,10 @@ function Profile() {
 
         try {
           await dispatch(DeleteFile({ fileId: fileId, userId: user._id })).unwrap()
-          Swal.fire("Deleted!", "Your file has been deleted successfully.", "success")
+          const result = await Swal.fire("Deleted!", "Your file has been deleted successfully.", "success")
+          if(result.isConfirmed){ 
+            window.location.reload();
+          }
         } catch (error) {
           // You might want to log the error for debugging: console.error(error)
           Swal.fire("Error!", "There was an issue deleting your file.", "error")
@@ -225,48 +232,54 @@ Swal.fire({
             </header>
 
             {files?.length > 0 ? (
-              <section className="file-list">
-                {files.map((file, index) => (
-                  <div key={file.ID} className="file-card">
-                    <div className="file-info">
-                      <h4 className="file-name">
-                        {file.Filename}
-                        <span className="tooltip">{file.Filename}</span>
-                      </h4>
-                      <p>{file.size}</p>
-                    </div>
-                    <div className="file-actions">
-                      <a
-                        href={process.env.REACT_APP_LINK_FILES + `/inspect/${file.ID}`}
-                        target="_blank"
-                        className="action-link"
-                        rel="noreferrer"
-                      >
-                        Inspect
-                      </a>
-                      <a
-                        href={process.env.REACT_APP_LINK_FILES + `/download/${file.ID}`}
-                        target="_blank"
-                        className="action-link"
-                        rel="noreferrer"
-                      >
-                        Download
-                      </a>
-                      <button onClick={() => handleCopying(file.ID, index)} className="copy-link-button">
-                        Copy Link
-                      </button>
-                      <button onClick={() => handleDeleteWithConfirmation(file.ID)} className="delete-button">
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </section>
+                <section className="file-list">
+                    {files.map((file, index) => (
+                        <div key={file.ID} className="file-card">
+                            <div className="file-info">
+                                <h4 className="file-name">
+                                    {file.Filename}
+                                    <span className="tooltip">{file.Filename}</span>
+                                </h4>
+                                {/* Existing size and new data added here */}
+                                <div className="file-details">
+                                    <p><strong>Size:</strong> {file.size}</p>
+                                    <p><strong>Views:</strong> {file.views}</p>
+                                    <p><strong>Downloads:</strong> {file.downloads}</p>
+                                    <p><strong>Created:</strong> {new Date(file.CreatedAt).toDateString()}</p>
+                                </div>
+                            </div>
+                            <div className="file-actions">
+                                <a
+                                    href={process.env.REACT_APP_LINK_FILES + `/inspect/${file.ID}`}
+                                    target="_blank"
+                                    className="action-link"
+                                    rel="noreferrer"
+                                >
+                                    Inspect
+                                </a>
+                                <a
+                                    href={process.env.REACT_APP_LINK_FILES + `/download/${file.ID}`}
+                                    target="_blank"
+                                    className="action-link"
+                                    rel="noreferrer"
+                                >
+                                    Download
+                                </a>
+                                <button onClick={() => handleCopying(file.ID, index)} className="copy-link-button">
+                                    Copy Link
+                                </button>
+                                <button onClick={() => handleDeleteWithConfirmation(file.ID)} className="delete-button">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </section>
             ) : (
-              <div className="empty-state">
-                <h3>No files yet</h3>
-                <p>Upload your first file to get started</p>
-              </div>
+                <div className="empty-state">
+                    <h3>No files yet</h3>
+                    <p>Upload your first file to get started</p>
+                </div>
             )}
           </div>
         </div>
