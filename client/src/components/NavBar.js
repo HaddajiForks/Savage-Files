@@ -70,21 +70,25 @@ function NavBar() {
 
       <style jsx>{`
         .settings-button {
-          background: none;
-          border: none;
+          background: transparent;
+          border: 1px solid transparent;
           color: var(--text-secondary);
           cursor: pointer;
-          padding: 0.5rem;
-          border-radius: 0.5rem;
-          transition: var(--transition);
-          display: flex;
+          padding: 0.45rem;
+          border-radius: 999px;
+          width: 34px;
+          height: 34px;
+          display: inline-flex;
           align-items: center;
           justify-content: center;
+          transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.15s;
         }
 
         .settings-button:hover {
-          background: var(--bg-tertiary);
-          color: var(--text-primary);
+          background: rgba(168, 85, 247, 0.12);
+          border-color: rgba(168, 85, 247, 0.25);
+          color: #fff;
+          transform: rotate(45deg);
         }
       `}</style>
     </>

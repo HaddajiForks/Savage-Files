@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import { Link } from "react-router-dom"
 import { resetPassword, userLogin, userRegister } from "../redux/userSlice"
 import { useNavigate } from "react-router-dom"
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true)
   const [user, setUser] = useState({ username: "", password: "", email: "" })
+  const [showPassword, setShowPassword] = useState(false)
   const [isResettingPassword, setIsResettingPassword] = useState(false)
   const [resetEmail, setResetEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -27,8 +29,8 @@ function Auth() {
 
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
-      return () => clearTimeout(timer)
+      const t = setTimeout(() => setCountdown(countdown - 1), 1000)
+      return () => clearTimeout(t)
     }
   }, [countdown])
 
@@ -46,27 +48,23 @@ function Auth() {
     }
   }, [user.password, isLogin])
 
+  const pwStrength = Object.values(passwordErrors).filter(Boolean).length
+
   const handleAuth = async () => {
     if (!isLogin && !isPasswordValid) return
     try {
-      if (isLogin) {
-        const result = await dispatch(userLogin(user)).unwrap()
-        if (result) navigate("/profile")
-      } else {
-        const result = await dispatch(userRegister(user)).unwrap()
-        if (result) navigate("/profile")
-      }
+      const action = isLogin ? userLogin : userRegister
+      const result = await dispatch(action(user)).unwrap()
+      if (result) navigate("/profile")
     } catch (err) {
       console.error("Authentication failed:", err)
     }
   }
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleAuth()
-  }
+  const handleKeyDown = (e) => { if (e.key === "Enter") handleAuth() }
 
-  const handleSwitchMode = (check) => {
-    setIsLogin(check)
+  const handleSwitchMode = (login) => {
+    setIsLogin(login)
     setUser({ username: "", password: "", email: "" })
     setShowPasswordRequirements(false)
     setIsResettingPassword(false)
@@ -100,561 +98,853 @@ function Auth() {
     setCountdown(0)
   }
 
-  if (isResettingPassword) {
-    return (
-      <div className="auth-page">
-        <BrandPanel />
-        <div className="auth-form-panel">
-          <div className="auth-card">
-            <button className="auth-back-btn" onClick={handleBackToAuth}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-              Back to Login
-            </button>
-            <h1 className="auth-title">Reset Password</h1>
-            <p className="auth-subtitle">Enter your email and we'll send you a reset link.</p>
-
-            {resetMessage && (
-              <div className={`auth-message ${resetMessageType}`}>{resetMessage}</div>
-            )}
-
-            <div className="auth-field">
-              <label className="auth-label">Email address</label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                className="auth-input"
-                disabled={isLoading || countdown > 0}
-              />
-            </div>
-
-            <button
-              onClick={handleSendResetEmail}
-              disabled={isLoading || countdown > 0 || !resetEmail}
-              className="auth-submit-btn"
-            >
-              {isLoading ? <Spinner /> : countdown > 0 ? `Resend in ${countdown}s` : "Send Reset Link"}
-            </button>
-          </div>
-        </div>
-        <AuthStyles />
-      </div>
-    )
-  }
-
   return (
-    <div className="auth-page">
-      <BrandPanel />
-      <div className="auth-form-panel">
-        <div className="auth-card">
-          <div className="auth-tabs">
-            <button className={`auth-tab ${isLogin ? "active" : ""}`} onClick={() => handleSwitchMode(true)}>
-              Log In
-            </button>
-            <button className={`auth-tab ${!isLogin ? "active" : ""}`} onClick={() => handleSwitchMode(false)}>
-              Sign Up
-            </button>
-          </div>
+    <div className="auth2-page">
+      <AuthBackground />
 
-          <h1 className="auth-title">{isLogin ? "Welcome back" : "Create account"}</h1>
-          <p className="auth-subtitle">{isLogin ? "Sign in to access your files." : "Start storing files for free."}</p>
+      <Link to="/" className="auth2-back-home">
+        <ArrowLeft />
+        <span>Back to home</span>
+      </Link>
 
-          <div className="auth-field">
-            <label className="auth-label">Username</label>
-            <input
-              type="text"
-              placeholder="Enter your username"
-              value={user.username}
-              onChange={(e) => setUser((p) => ({ ...p, username: e.target.value }))}
-              onKeyDown={handleKeyDown}
-              className="auth-input"
-            />
-          </div>
+      <div className="auth2-shell">
+        <aside className="auth2-side" aria-hidden>
+          <div className="auth2-side-inner">
+            <Link to="/" className="auth2-logo">
+              <LogoMark />
+              <span>Savage Files</span>
+            </Link>
 
-          {!isLogin && (
-            <div className="auth-field">
-              <label className="auth-label">Email</label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={user.email}
-                onChange={(e) => setUser((p) => ({ ...p, email: e.target.value }))}
-                className="auth-input"
-              />
+            <h2 className="auth2-side-title">
+              Free cloud storage,<br />
+              built <em>savagely</em> simple.
+            </h2>
+            <p className="auth2-side-sub">
+              Upload, organize and share your files.
+              5 GB free · public &amp; private links · developer API.
+            </p>
+
+            <ul className="auth2-side-list">
+              <li><CheckPill /> 5 GB of free storage</li>
+              <li><CheckPill /> Public &amp; private sharing</li>
+              <li><CheckPill /> Folders &amp; organization</li>
+              <li><CheckPill /> REST API for developers</li>
+            </ul>
+
+            <div className="auth2-side-quote">
+              <span className="auth2-quote-mark">"</span>
+              The cleanest little file host I've used.
+              <span className="auth2-quote-by">— GitHub user</span>
             </div>
-          )}
+          </div>
+        </aside>
 
-          <div className="auth-field">
-            <label className="auth-label">Password</label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={user.password}
-              onChange={(e) => setUser((p) => ({ ...p, password: e.target.value }))}
-              onKeyDown={handleKeyDown}
-              onFocus={() => !isLogin && setShowPasswordRequirements(true)}
-              onBlur={() => !user.password && setShowPasswordRequirements(false)}
-              className={`auth-input ${!isLogin && user.password && !isPasswordValid ? "input-error" : ""}`}
-            />
+        <main className="auth2-main">
+          <div className="auth2-card">
+            {isResettingPassword ? (
+              <ResetView
+                resetEmail={resetEmail}
+                setResetEmail={setResetEmail}
+                isLoading={isLoading}
+                countdown={countdown}
+                resetMessage={resetMessage}
+                resetMessageType={resetMessageType}
+                onBack={handleBackToAuth}
+                onSubmit={handleSendResetEmail}
+              />
+            ) : (
+              <>
+                <Link to="/" className="auth2-card-logo">
+                  <LogoMark />
+                  <span>Savage Files</span>
+                </Link>
 
-            {!isLogin && showPasswordRequirements && (
-              <div className="pw-requirements">
-                {[
-                  [passwordErrors.length, "At least 8 characters"],
-                  [passwordErrors.uppercase, "One uppercase letter (A-Z)"],
-                  [passwordErrors.lowercase, "One lowercase letter (a-z)"],
-                  [passwordErrors.number, "One number (0-9)"],
-                  [passwordErrors.specialChar, "One special character (!@#$%…)"],
-                ].map(([met, label]) => (
-                  <div key={label} className={`pw-req ${met ? "met" : ""}`}>
-                    <span className="pw-req-dot">{met ? "✓" : "○"}</span>
-                    {label}
+                <div className="auth2-tabs" role="tablist">
+                  <button
+                    role="tab"
+                    className={`auth2-tab ${isLogin ? "active" : ""}`}
+                    onClick={() => handleSwitchMode(true)}
+                  >Sign in</button>
+                  <button
+                    role="tab"
+                    className={`auth2-tab ${!isLogin ? "active" : ""}`}
+                    onClick={() => handleSwitchMode(false)}
+                  >Create account</button>
+                  <span
+                    className="auth2-tab-indicator"
+                    style={{ transform: `translateX(${isLogin ? 0 : 100}%)` }}
+                  />
+                </div>
+
+                <h1 className="auth2-title">
+                  {isLogin ? "Welcome back" : "Get started"}
+                </h1>
+                <p className="auth2-sub">
+                  {isLogin
+                    ? "Enter your credentials to access your files."
+                    : "Create your free account in seconds — no card required."}
+                </p>
+
+                <div className="auth2-field">
+                  <label className="auth2-label">Username</label>
+                  <div className="auth2-input-wrap">
+                    <span className="auth2-input-icon"><UserIcon /></span>
+                    <input
+                      type="text"
+                      placeholder="your_username"
+                      value={user.username}
+                      onChange={(e) => setUser((p) => ({ ...p, username: e.target.value }))}
+                      onKeyDown={handleKeyDown}
+                      className="auth2-input"
+                      autoComplete="username"
+                    />
                   </div>
-                ))}
-              </div>
+                </div>
+
+                {!isLogin && (
+                  <div className="auth2-field">
+                    <label className="auth2-label">Email</label>
+                    <div className="auth2-input-wrap">
+                      <span className="auth2-input-icon"><MailIcon /></span>
+                      <input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={user.email}
+                        onChange={(e) => setUser((p) => ({ ...p, email: e.target.value }))}
+                        className="auth2-input"
+                        autoComplete="email"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="auth2-field">
+                  <div className="auth2-label-row">
+                    <label className="auth2-label">Password</label>
+                    {isLogin && (
+                      <button
+                        type="button"
+                        className="auth2-forgot"
+                        onClick={() => setIsResettingPassword(true)}
+                      >Forgot?</button>
+                    )}
+                  </div>
+                  <div className="auth2-input-wrap">
+                    <span className="auth2-input-icon"><LockIcon /></span>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={user.password}
+                      onChange={(e) => setUser((p) => ({ ...p, password: e.target.value }))}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => !isLogin && setShowPasswordRequirements(true)}
+                      onBlur={() => !user.password && setShowPasswordRequirements(false)}
+                      className={`auth2-input ${!isLogin && user.password && !isPasswordValid ? "input-error" : ""}`}
+                      autoComplete={isLogin ? "current-password" : "new-password"}
+                    />
+                    <button
+                      type="button"
+                      className="auth2-eye"
+                      onClick={() => setShowPassword((s) => !s)}
+                      tabIndex={-1}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </button>
+                  </div>
+
+                  {!isLogin && user.password && (
+                    <div className="auth2-strength">
+                      <div className="auth2-strength-bar">
+                        {[0, 1, 2, 3, 4].map((i) => (
+                          <span
+                            key={i}
+                            className={`auth2-strength-seg ${i < pwStrength ? `met s-${pwStrength}` : ""}`}
+                          />
+                        ))}
+                      </div>
+                      <span className={`auth2-strength-label s-${pwStrength}`}>
+                        {["Very weak", "Weak", "Fair", "Good", "Strong", "Excellent"][pwStrength]}
+                      </span>
+                    </div>
+                  )}
+
+                  {!isLogin && showPasswordRequirements && (
+                    <div className="auth2-pw-reqs">
+                      {[
+                        [passwordErrors.length, "8+ characters"],
+                        [passwordErrors.uppercase, "Uppercase (A–Z)"],
+                        [passwordErrors.lowercase, "Lowercase (a–z)"],
+                        [passwordErrors.number, "Number (0–9)"],
+                        [passwordErrors.specialChar, "Special (!@#$…)"],
+                      ].map(([met, label]) => (
+                        <span key={label} className={`auth2-pw-req ${met ? "met" : ""}`}>
+                          {met ? <TinyCheck /> : <TinyDot />}
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {status === "failed" && error && (
+                  <div className="auth2-error">
+                    <AlertIcon /> {error}
+                  </div>
+                )}
+
+                <button
+                  className="auth2-submit"
+                  onClick={handleAuth}
+                  disabled={status === "pending" || (!isLogin && !isPasswordValid)}
+                >
+                  {status === "pending" ? (
+                    <Spinner />
+                  ) : (
+                    <>
+                      {isLogin ? "Sign in" : "Create account"}
+                      <ArrowRight />
+                    </>
+                  )}
+                </button>
+
+                <p className="auth2-switch">
+                  {isLogin ? "New here?" : "Already a member?"}{" "}
+                  <button
+                    type="button"
+                    className="auth2-switch-link"
+                    onClick={() => handleSwitchMode(!isLogin)}
+                  >
+                    {isLogin ? "Create an account" : "Sign in instead"}
+                  </button>
+                </p>
+              </>
             )}
           </div>
 
-          {status === "failed" && <p className="auth-error">{error}</p>}
-
-          {isLogin && (
-            <button className="auth-forgot" onClick={() => setIsResettingPassword(true)}>
-              Forgot password?
-            </button>
-          )}
-
-          <button
-            className="auth-submit-btn"
-            onClick={handleAuth}
-            disabled={status === "pending" || (!isLogin && !isPasswordValid)}
-          >
-            {status === "pending" ? <Spinner /> : isLogin ? "Sign In" : "Create Account"}
-          </button>
-        </div>
+          <p className="auth2-foot">
+            By continuing, you agree to use Savage Files responsibly.{" "}
+            <a href="https://github.com/HaddajiDev/Savage-Files" target="_blank" rel="noreferrer">
+              Open source on GitHub
+            </a>
+          </p>
+        </main>
       </div>
+
       <AuthStyles />
     </div>
   )
 }
 
-function BrandPanel() {
+/* ── Reset password sub-view ───────────────────────────────── */
+function ResetView({ resetEmail, setResetEmail, isLoading, countdown, resetMessage, resetMessageType, onBack, onSubmit }) {
   return (
-    <div className="auth-brand-panel">
-      <div className="auth-brand-inner">
-        <div className="auth-brand-logo">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
-            <polyline points="13 2 13 9 20 9"/>
-          </svg>
-          Savage Files
-        </div>
-        <h2 className="auth-brand-headline">Store, share &amp; secure your files in the cloud.</h2>
-        <ul className="auth-brand-list">
-          <BrandFeature icon="🗄️" text="1 GB of free cloud storage" />
-          <BrandFeature icon="🔗" text="Public &amp; private shareable links" />
-          <BrandFeature icon="📁" text="Folders &amp; file organization" />
-          <BrandFeature icon="⚡" text="Developer API access" />
-        </ul>
+    <>
+      <button className="auth2-back-btn" onClick={onBack}>
+        <ArrowLeft /> Back to sign in
+      </button>
+      <div className="auth2-icon-circle">
+        <KeyIcon />
       </div>
+      <h1 className="auth2-title">Reset your password</h1>
+      <p className="auth2-sub">
+        Enter the email associated with your account and we'll send you a link to reset your password.
+      </p>
+
+      {resetMessage && (
+        <div className={`auth2-msg ${resetMessageType}`}>
+          {resetMessageType === "success" ? <CheckCircle /> : <AlertIcon />}
+          {resetMessage}
+        </div>
+      )}
+
+      <div className="auth2-field">
+        <label className="auth2-label">Email address</label>
+        <div className="auth2-input-wrap">
+          <span className="auth2-input-icon"><MailIcon /></span>
+          <input
+            type="email"
+            placeholder="you@example.com"
+            value={resetEmail}
+            onChange={(e) => setResetEmail(e.target.value)}
+            className="auth2-input"
+            disabled={isLoading || countdown > 0}
+          />
+        </div>
+      </div>
+
+      <button
+        onClick={onSubmit}
+        disabled={isLoading || countdown > 0 || !resetEmail}
+        className="auth2-submit"
+      >
+        {isLoading ? <Spinner /> : countdown > 0 ? `Resend in ${countdown}s` : (
+          <>Send reset link <ArrowRight /></>
+        )}
+      </button>
+    </>
+  )
+}
+
+/* ── Background ───────────────────────────────────────────── */
+function AuthBackground() {
+  return (
+    <div className="auth2-bg" aria-hidden>
+      <div className="auth2-bg-grid" />
+      <div className="auth2-bg-orb auth2-bg-orb-1" />
+      <div className="auth2-bg-orb auth2-bg-orb-2" />
+      <div className="auth2-bg-orb auth2-bg-orb-3" />
     </div>
   )
 }
 
-function BrandFeature({ icon, text }) {
-  return (
-    <li className="auth-brand-feature">
-      <span className="auth-brand-feature-icon">{icon}</span>
-      <span>{text}</span>
-    </li>
-  )
-}
+/* ── Icons ────────────────────────────────────────────────── */
+const LogoMark = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M4 6.5C4 4.6 5.6 3 7.5 3h6.7c.5 0 .9.2 1.3.5l4.3 4.3c.3.3.5.8.5 1.3v9.4c0 1.9-1.6 3.5-3.5 3.5h-9C5.6 22 4 20.4 4 18.5v-12Z" fill="url(#authg)" />
+    <path d="M14 3.5V8a1.5 1.5 0 0 0 1.5 1.5H20" stroke="rgba(255,255,255,.55)" strokeWidth="1.4" />
+    <defs>
+      <linearGradient id="authg" x1="4" y1="3" x2="20" y2="22"><stop stopColor="#a855f7"/><stop offset="1" stopColor="#6d28d9"/></linearGradient>
+    </defs>
+  </svg>
+)
+const ArrowRight = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>)
+const ArrowLeft = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>)
+const UserIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>)
+const MailIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>)
+const LockIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>)
+const KeyIcon = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>)
+const Eye = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>)
+const EyeOff = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>)
+const AlertIcon = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>)
+const CheckCircle = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>)
+const CheckPill = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(168,85,247,.18)" stroke="rgba(168,85,247,.45)" strokeWidth="1.2"/><polyline points="8 12 11 15 16 9" stroke="#c084fc" strokeWidth="2" fill="none"/></svg>)
+const TinyCheck = () => (<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>)
+const TinyDot = () => (<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="6"/></svg>)
+const Spinner = () => <span className="auth2-spinner" />
 
-function Spinner() {
-  return <span className="auth-spinner" />
-}
-
+/* ── Styles ───────────────────────────────────────────────── */
 function AuthStyles() {
   return (
     <style>{`
-      .auth-page {
-        display: flex;
+      .auth2-page {
+        position: relative;
         min-height: 100vh;
-        background: #0d0d14;
-      }
-
-      .auth-brand-panel {
-        flex: 0 0 420px;
-        background: linear-gradient(145deg, #1a0030 0%, #0f0020 50%, #150025 100%);
-        border-right: 1px solid rgba(138, 43, 226, 0.2);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 3rem 2.5rem;
-        position: relative;
+        padding: 1.5rem;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #ece8f7;
+        background:
+          radial-gradient(1200px 700px at 80% -10%, rgba(124,58,237,.20), transparent 60%),
+          radial-gradient(900px 600px at 0% 30%, rgba(168,85,247,.12), transparent 60%),
+          linear-gradient(180deg, #08070f 0%, #0c0a17 100%);
         overflow: hidden;
       }
 
-      .auth-brand-panel::before {
-        content: "";
-        position: absolute;
-        top: -100px;
-        left: -100px;
-        width: 350px;
-        height: 350px;
-        background: radial-gradient(circle, rgba(138, 43, 226, 0.18), transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
+      /* Background FX */
+      .auth2-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+      .auth2-bg-grid {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(rgba(168,85,247,.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(168,85,247,.045) 1px, transparent 1px);
+        background-size: 56px 56px;
+        mask-image: radial-gradient(ellipse at 50% 50%, #000 30%, transparent 75%);
+        -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 30%, transparent 75%);
+      }
+      .auth2-bg-orb {
+        position: absolute; border-radius: 50%;
+        filter: blur(90px); opacity: .55;
+        animation: auth2-drift 22s ease-in-out infinite;
+      }
+      .auth2-bg-orb-1 {
+        width: 540px; height: 540px;
+        background: radial-gradient(circle, #7c3aed 0%, transparent 65%);
+        top: -120px; left: -100px;
+      }
+      .auth2-bg-orb-2 {
+        width: 480px; height: 480px;
+        background: radial-gradient(circle, #a855f7 0%, transparent 65%);
+        top: 30%; right: -120px;
+        animation-delay: -8s;
+      }
+      .auth2-bg-orb-3 {
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, #6d28d9 0%, transparent 70%);
+        bottom: -240px; left: 30%;
+        animation-delay: -14s;
+        opacity: .35;
+      }
+      @keyframes auth2-drift {
+        0%, 100% { transform: translate3d(0,0,0) scale(1); }
+        50%      { transform: translate3d(40px,-30px,0) scale(1.08); }
       }
 
-      .auth-brand-panel::after {
-        content: "";
+      .auth2-back-home {
         position: absolute;
-        bottom: -80px;
-        right: -80px;
-        width: 280px;
-        height: 280px;
-        background: radial-gradient(circle, rgba(157, 78, 221, 0.12), transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
+        top: 1.5rem; left: 1.5rem;
+        z-index: 5;
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .45rem .8rem;
+        font-size: .82rem;
+        color: rgba(236,232,247,.7);
+        text-decoration: none;
+        background: rgba(20,16,36,.5);
+        border: 1px solid rgba(168,85,247,.18);
+        border-radius: 999px;
+        backdrop-filter: blur(12px);
+        transition: color .2s, background .2s, border-color .2s;
+      }
+      .auth2-back-home:hover {
+        color: #fff;
+        background: rgba(168,85,247,.12);
+        border-color: rgba(168,85,247,.35);
       }
 
-      .auth-brand-inner {
+      /* Shell — split panel */
+      .auth2-shell {
         position: relative;
         z-index: 1;
+        width: 100%;
+        max-width: 1100px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        background: rgba(14,10,28,.55);
+        border: 1px solid rgba(168,85,247,.18);
+        border-radius: 28px;
+        overflow: hidden;
+        backdrop-filter: saturate(160%) blur(20px);
+        -webkit-backdrop-filter: saturate(160%) blur(20px);
+        box-shadow: 0 60px 120px -30px rgba(0,0,0,.7), 0 0 0 1px rgba(168,85,247,.05);
       }
 
-      .auth-brand-logo {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-size: 1.6rem;
-        font-weight: 700;
+      /* Side panel (only desktop) */
+      .auth2-side {
+        position: relative;
+        padding: 3rem 3rem;
+        background:
+          linear-gradient(160deg, rgba(124,58,237,.18) 0%, rgba(168,85,247,.06) 50%, rgba(20,16,36,.4) 100%);
+        border-right: 1px solid rgba(168,85,247,.15);
+        overflow: hidden;
+      }
+      .auth2-side::before {
+        content: "";
+        position: absolute;
+        top: -100px; left: -50px;
+        width: 320px; height: 320px;
+        background: radial-gradient(circle, rgba(168,85,247,.35), transparent 70%);
+        filter: blur(40px);
+      }
+      .auth2-side::after {
+        content: "";
+        position: absolute;
+        bottom: -120px; right: -80px;
+        width: 360px; height: 360px;
+        background: radial-gradient(circle, rgba(124,58,237,.3), transparent 70%);
+        filter: blur(50px);
+      }
+      .auth2-side-inner { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+      .auth2-logo {
+        display: inline-flex; align-items: center; gap: .55rem;
+        font-weight: 700; font-size: 1.05rem;
+        text-decoration: none;
         color: #fff;
         margin-bottom: 2.5rem;
-        background: linear-gradient(45deg, #c084fc, #a855f7);
-        -webkit-background-clip: text;
-        background-clip: text;
+      }
+      .auth2-logo span {
+        background: linear-gradient(90deg, #fff, #d6c5ff);
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .auth2-side-title {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -.5px;
+        color: #fff;
+        margin: 0 0 1rem;
+      }
+      .auth2-side-title em {
+        font-style: normal;
+        background: linear-gradient(90deg, #c084fc, #a855f7);
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .auth2-side-sub {
+        color: #a59bc4;
+        font-size: .95rem;
+        line-height: 1.6;
+        margin: 0 0 2.5rem;
+      }
+      .auth2-side-list {
+        list-style: none;
+        margin: 0 0 auto;
+        padding: 0;
+        display: flex; flex-direction: column; gap: .85rem;
+      }
+      .auth2-side-list li {
+        display: flex; align-items: center; gap: .65rem;
+        font-size: .92rem;
+        color: #d4cae8;
+      }
+      .auth2-side-quote {
+        margin-top: 2.5rem;
+        padding: 1.1rem 1.2rem;
+        background: rgba(0,0,0,.25);
+        border: 1px solid rgba(168,85,247,.18);
+        border-radius: 14px;
+        font-size: .88rem;
+        color: #c4b8dc;
+        line-height: 1.5;
+        position: relative;
+      }
+      .auth2-quote-mark {
+        position: absolute;
+        top: -.2rem; left: .8rem;
+        font-size: 2.4rem;
+        font-family: Georgia, serif;
+        color: rgba(168,85,247,.5);
+        line-height: 1;
+      }
+      .auth2-quote-by {
+        display: block;
+        margin-top: .55rem;
+        font-size: .78rem;
+        color: #6f6789;
+      }
+
+      /* Main panel */
+      .auth2-main {
+        padding: 3rem 3rem 2rem;
+        display: flex; flex-direction: column;
+        background: rgba(8,6,18,.35);
+      }
+      .auth2-card {
+        flex: 1;
+        display: flex; flex-direction: column;
+      }
+
+      /* Card-only logo (mobile) */
+      .auth2-card-logo {
+        display: none;
+        align-items: center; gap: .55rem;
+        font-weight: 700; font-size: 1rem;
+        color: #fff; text-decoration: none;
+        margin-bottom: 1.75rem;
+      }
+      .auth2-card-logo span {
+        background: linear-gradient(90deg, #fff, #d6c5ff);
+        -webkit-background-clip: text; background-clip: text;
         -webkit-text-fill-color: transparent;
       }
 
-      .auth-brand-logo svg {
-        stroke: #a855f7;
-        flex-shrink: 0;
-        filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.4));
-        -webkit-text-fill-color: initial;
-      }
-
-      .auth-brand-headline {
-        font-size: 1.6rem;
-        font-weight: 600;
-        color: #e2d9f3;
-        line-height: 1.4;
-        margin-bottom: 2rem;
-      }
-
-      .auth-brand-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .auth-brand-feature {
-        display: flex;
-        align-items: center;
-        gap: 0.875rem;
-        color: #b09fd0;
-        font-size: 0.95rem;
-      }
-
-      .auth-brand-feature-icon {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(138, 43, 226, 0.15);
-        border: 1px solid rgba(138, 43, 226, 0.25);
-        border-radius: 10px;
-        font-size: 1.1rem;
-        flex-shrink: 0;
-      }
-
-      .auth-form-panel {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        background: #0d0d14;
-      }
-
-      .auth-card {
-        width: 100%;
-        max-width: 420px;
-        background: rgba(22, 22, 35, 0.9);
-        border: 1px solid rgba(138, 43, 226, 0.15);
-        border-radius: 20px;
-        padding: 2.5rem;
-        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
-      }
-
-      .auth-tabs {
-        display: flex;
-        background: rgba(10, 10, 18, 0.8);
+      /* Tabs */
+      .auth2-tabs {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        background: rgba(0,0,0,.3);
+        border: 1px solid rgba(168,85,247,.15);
         border-radius: 12px;
         padding: 4px;
         margin-bottom: 2rem;
-        border: 1px solid rgba(138, 43, 226, 0.12);
       }
-
-      .auth-tab {
-        flex: 1;
-        padding: 0.6rem 1rem;
-        background: none;
+      .auth2-tab {
+        position: relative;
+        z-index: 1;
+        background: transparent;
         border: none;
-        border-radius: 9px;
-        color: #888;
-        font-size: 0.9rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .auth-tab.active {
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: #fff;
+        padding: .65rem 1rem;
+        font-size: .88rem;
         font-weight: 600;
-        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+        color: #8a82a8;
+        cursor: pointer;
+        border-radius: 9px;
+        transition: color .25s ease;
+      }
+      .auth2-tab.active { color: #fff; }
+      .auth2-tab:not(.active):hover { color: #c4b8dc; }
+      .auth2-tab-indicator {
+        position: absolute;
+        top: 4px; left: 4px;
+        width: calc(50% - 4px);
+        height: calc(100% - 8px);
+        background: linear-gradient(135deg, #a855f7, #7c3aed);
+        border-radius: 9px;
+        box-shadow: 0 8px 22px -8px rgba(124,58,237,.7);
+        transition: transform .35s cubic-bezier(.65,0,.35,1);
+        z-index: 0;
       }
 
-      .auth-tab:not(.active):hover {
-        color: #ccc;
-      }
-
-      .auth-title {
+      .auth2-title {
         font-size: 1.6rem;
         font-weight: 700;
-        color: #f0eaff;
-        margin: 0 0 0.4rem;
+        letter-spacing: -.4px;
+        color: #fff;
+        margin: 0 0 .35rem;
+      }
+      .auth2-sub {
+        color: #a59bc4;
+        font-size: .9rem;
+        margin: 0 0 1.6rem;
       }
 
-      .auth-subtitle {
-        color: #7c7c9a;
-        font-size: 0.9rem;
-        margin: 0 0 1.75rem;
+      .auth2-icon-circle {
+        width: 56px; height: 56px;
+        display: grid; place-items: center;
+        background: linear-gradient(135deg, rgba(168,85,247,.22), rgba(124,58,237,.10));
+        border: 1px solid rgba(168,85,247,.35);
+        border-radius: 16px;
+        color: #c084fc;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 12px 28px -12px rgba(124,58,237,.6);
       }
 
-      .auth-field {
-        margin-bottom: 1.1rem;
+      .auth2-field { margin-bottom: 1rem; }
+      .auth2-label-row {
+        display: flex; justify-content: space-between; align-items: baseline;
+        margin-bottom: .4rem;
       }
-
-      .auth-label {
+      .auth2-label {
         display: block;
-        font-size: 0.8rem;
+        font-size: .76rem;
         font-weight: 600;
-        color: #9980c0;
-        letter-spacing: 0.5px;
         text-transform: uppercase;
-        margin-bottom: 0.4rem;
+        letter-spacing: .8px;
+        color: #9989b8;
+        margin-bottom: .4rem;
       }
+      .auth2-label-row .auth2-label { margin-bottom: 0; }
+      .auth2-forgot {
+        background: none; border: none; padding: 0;
+        font-size: .78rem;
+        color: #c084fc;
+        cursor: pointer;
+        transition: color .2s;
+      }
+      .auth2-forgot:hover { color: #fff; text-decoration: underline; }
 
-      .auth-input {
+      .auth2-input-wrap {
+        position: relative;
+      }
+      .auth2-input-icon {
+        position: absolute;
+        left: .9rem; top: 50%;
+        transform: translateY(-50%);
+        color: #6f6789;
+        pointer-events: none;
+        display: inline-flex;
+      }
+      .auth2-input-wrap:focus-within .auth2-input-icon { color: #c084fc; }
+      .auth2-input {
         width: 100%;
-        padding: 0.8rem 1rem;
-        background: rgba(10, 10, 18, 0.8);
-        border: 1px solid rgba(138, 43, 226, 0.2);
-        border-radius: 10px;
-        color: #e8e0f8;
-        font-size: 0.95rem;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        padding: .8rem 1rem .8rem 2.5rem;
+        background: rgba(0,0,0,.3);
+        border: 1px solid rgba(168,85,247,.18);
+        border-radius: 11px;
+        color: #ece8f7;
+        font-size: .92rem;
+        outline: none;
+        transition: border-color .2s, box-shadow .2s, background .2s;
         box-sizing: border-box;
       }
-
-      .auth-input::placeholder {
-        color: #4a4a6a;
+      .auth2-input::placeholder { color: #4d4669; }
+      .auth2-input:focus {
+        border-color: rgba(168,85,247,.6);
+        background: rgba(0,0,0,.4);
+        box-shadow: 0 0 0 4px rgba(168,85,247,.12);
       }
-
-      .auth-input:focus {
-        outline: none;
-        border-color: #7c3aed;
-        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+      .auth2-input.input-error {
+        border-color: rgba(248,113,113,.55);
+        box-shadow: 0 0 0 4px rgba(248,113,113,.10);
       }
-
-      .auth-input.input-error {
-        border-color: #ef4444;
-        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
-      }
-
-      .pw-requirements {
-        margin-top: 0.6rem;
-        padding: 0.8rem 1rem;
-        background: rgba(10, 10, 18, 0.9);
-        border: 1px solid rgba(138, 43, 226, 0.15);
-        border-radius: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-      }
-
-      .pw-req {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.78rem;
-        color: #666;
-        transition: color 0.2s;
-      }
-
-      .pw-req.met {
-        color: #4ade80;
-      }
-
-      .pw-req-dot {
-        width: 16px;
-        height: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.6rem;
-        font-weight: 700;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.06);
-        flex-shrink: 0;
-      }
-
-      .pw-req.met .pw-req-dot {
-        background: #4ade80;
-        color: #000;
-      }
-
-      .auth-error {
-        color: #f87171;
-        font-size: 0.85rem;
-        margin: 0.5rem 0;
-        padding: 0.6rem 0.9rem;
-        background: rgba(239, 68, 68, 0.08);
-        border: 1px solid rgba(239, 68, 68, 0.2);
+      .auth2-eye {
+        position: absolute;
+        right: .55rem; top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #6f6789;
+        padding: .4rem;
         border-radius: 8px;
-      }
-
-      .auth-message {
-        padding: 0.75rem 1rem;
-        border-radius: 10px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin-bottom: 1.25rem;
-      }
-
-      .auth-message.success {
-        background: rgba(74, 222, 128, 0.08);
-        border: 1px solid rgba(74, 222, 128, 0.25);
-        color: #4ade80;
-      }
-
-      .auth-message.error {
-        background: rgba(239, 68, 68, 0.08);
-        border: 1px solid rgba(239, 68, 68, 0.25);
-        color: #f87171;
-      }
-
-      .auth-forgot {
-        display: block;
-        background: none;
-        border: none;
-        color: #8b5cf6;
-        font-size: 0.85rem;
         cursor: pointer;
-        padding: 0;
-        margin: 0.25rem 0 0.5rem;
-        transition: color 0.2s;
-        text-align: left;
+        display: inline-flex;
+        transition: color .2s, background .2s;
+      }
+      .auth2-eye:hover { color: #c084fc; background: rgba(168,85,247,.10); }
+
+      /* Strength meter */
+      .auth2-strength {
+        display: flex; align-items: center; gap: .65rem;
+        margin-top: .55rem;
+      }
+      .auth2-strength-bar {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+      }
+      .auth2-strength-seg {
+        height: 4px;
+        background: rgba(255,255,255,.06);
+        border-radius: 999px;
+        transition: background .25s;
+      }
+      .auth2-strength-seg.met.s-1 { background: #f87171; }
+      .auth2-strength-seg.met.s-2 { background: #fb923c; }
+      .auth2-strength-seg.met.s-3 { background: #fbbf24; }
+      .auth2-strength-seg.met.s-4 { background: #a855f7; }
+      .auth2-strength-seg.met.s-5 { background: #4ade80; }
+      .auth2-strength-label {
+        font-size: .72rem;
+        font-weight: 600;
+        min-width: 70px;
+        text-align: right;
+        color: #6f6789;
+      }
+      .auth2-strength-label.s-1 { color: #f87171; }
+      .auth2-strength-label.s-2 { color: #fb923c; }
+      .auth2-strength-label.s-3 { color: #fbbf24; }
+      .auth2-strength-label.s-4 { color: #c084fc; }
+      .auth2-strength-label.s-5 { color: #4ade80; }
+
+      .auth2-pw-reqs {
+        margin-top: .65rem;
+        display: flex; flex-wrap: wrap;
+        gap: .35rem;
+      }
+      .auth2-pw-req {
+        display: inline-flex; align-items: center; gap: .35rem;
+        padding: .3rem .55rem;
+        font-size: .72rem;
+        color: #6f6789;
+        background: rgba(0,0,0,.2);
+        border: 1px solid rgba(168,85,247,.10);
+        border-radius: 999px;
+        transition: color .2s, background .2s, border-color .2s;
+      }
+      .auth2-pw-req.met {
+        color: #4ade80;
+        background: rgba(74,222,128,.08);
+        border-color: rgba(74,222,128,.25);
       }
 
-      .auth-forgot:hover {
-        color: #a78bfa;
-        text-decoration: underline;
+      .auth2-error {
+        display: flex; align-items: center; gap: .5rem;
+        padding: .65rem .85rem;
+        background: rgba(248,113,113,.08);
+        border: 1px solid rgba(248,113,113,.25);
+        border-radius: 11px;
+        color: #fca5a5;
+        font-size: .85rem;
+        margin: 0 0 1rem;
+      }
+      .auth2-msg {
+        display: flex; align-items: center; gap: .5rem;
+        padding: .7rem .9rem;
+        border-radius: 11px;
+        font-size: .85rem;
+        margin: 0 0 1.1rem;
+      }
+      .auth2-msg.success {
+        background: rgba(74,222,128,.08);
+        border: 1px solid rgba(74,222,128,.25);
+        color: #86efac;
+      }
+      .auth2-msg.error {
+        background: rgba(248,113,113,.08);
+        border: 1px solid rgba(248,113,113,.25);
+        color: #fca5a5;
       }
 
-      .auth-submit-btn {
+      .auth2-submit {
         width: 100%;
-        padding: 0.85rem 1rem;
-        margin-top: 1rem;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        margin-top: .35rem;
+        padding: .9rem 1rem;
+        background: linear-gradient(135deg, #a855f7 0%, #7c3aed 60%, #6d28d9 100%);
         border: none;
-        border-radius: 12px;
+        border-radius: 13px;
         color: #fff;
-        font-size: 0.95rem;
+        font-size: .95rem;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 48px;
+        display: inline-flex; align-items: center; justify-content: center;
+        gap: .5rem;
+        min-height: 50px;
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,.08) inset,
+          0 14px 32px -10px rgba(124,58,237,.6);
+        transition: transform .12s ease, box-shadow .25s ease, opacity .2s;
       }
-
-      .auth-submit-btn:hover:not(:disabled) {
-        background: linear-gradient(135deg, #6d28d9, #5b21b6);
-        box-shadow: 0 6px 22px rgba(124, 58, 237, 0.5);
+      .auth2-submit:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,.12) inset,
+          0 18px 40px -10px rgba(124,58,237,.8);
       }
+      .auth2-submit:active:not(:disabled) { transform: translateY(0) scale(.99); }
+      .auth2-submit:disabled { opacity: .5; cursor: not-allowed; }
 
-      .auth-submit-btn:active:not(:disabled) {
-        transform: scale(0.98);
-        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
-      }
-
-      .auth-submit-btn:disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-      }
-
-      .auth-back-btn {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        background: none;
-        border: none;
-        color: #9980c0;
-        font-size: 0.875rem;
+      .auth2-back-btn {
+        align-self: flex-start;
+        display: inline-flex; align-items: center; gap: .35rem;
+        background: none; border: none; padding: 0;
+        font-size: .82rem; color: #9989b8;
         cursor: pointer;
-        padding: 0;
         margin-bottom: 1.5rem;
-        transition: color 0.2s;
+        transition: color .2s;
       }
+      .auth2-back-btn:hover { color: #c4b8dc; }
 
-      .auth-back-btn:hover {
-        color: #c4b5fd;
+      .auth2-switch {
+        text-align: center;
+        margin: 1.4rem 0 0;
+        font-size: .85rem;
+        color: #8a82a8;
       }
+      .auth2-switch-link {
+        background: none; border: none; padding: 0;
+        color: #c084fc;
+        font-weight: 600;
+        cursor: pointer;
+        transition: color .2s;
+      }
+      .auth2-switch-link:hover { color: #fff; text-decoration: underline; }
 
-      .auth-spinner {
+      .auth2-foot {
+        text-align: center;
+        font-size: .76rem;
+        color: #6f6789;
+        margin: 1.5rem 0 0;
+      }
+      .auth2-foot a { color: #c084fc; text-decoration: none; }
+      .auth2-foot a:hover { color: #fff; text-decoration: underline; }
+
+      .auth2-spinner {
         display: inline-block;
-        width: 18px;
-        height: 18px;
-        border: 2px solid rgba(255,255,255,0.3);
+        width: 18px; height: 18px;
+        border: 2px solid rgba(255,255,255,.3);
         border-left-color: #fff;
         border-radius: 50%;
-        animation: auth-spin 0.8s linear infinite;
+        animation: auth2-spin .8s linear infinite;
       }
+      @keyframes auth2-spin { to { transform: rotate(360deg); } }
 
-      @keyframes auth-spin {
-        to { transform: rotate(360deg); }
+      /* Responsive */
+      @media (max-width: 900px) {
+        .auth2-shell { grid-template-columns: 1fr; max-width: 480px; }
+        .auth2-side { display: none; }
+        .auth2-main { padding: 2.25rem 1.75rem 1.5rem; }
+        .auth2-card-logo { display: inline-flex; }
       }
-
-      @media (max-width: 768px) {
-        .auth-brand-panel {
-          display: none;
-        }
-        .auth-card {
-          padding: 2rem 1.5rem;
-          border: none;
-          background: transparent;
-          box-shadow: none;
-        }
+      @media (max-width: 480px) {
+        .auth2-page { padding: 1rem; }
+        .auth2-back-home { top: 1rem; left: 1rem; }
+        .auth2-main { padding: 2rem 1.25rem 1.25rem; }
+        .auth2-title { font-size: 1.4rem; }
       }
     `}</style>
   )

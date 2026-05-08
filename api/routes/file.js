@@ -70,7 +70,7 @@ module.exports = (db, bucket) => {
 
         try {
             const userId = req.params.id;
-            const storageLimit = 1073741824; // 1 GB
+            const storageLimit = 5368709120; // 5 GB
 
             const userFiles = await allFiles.find({ userId });
             const b2Files = userFiles.filter(f => f.b2Key);
@@ -82,7 +82,7 @@ module.exports = (db, bucket) => {
                 gridUsed = existingFiles.reduce((sum, f) => sum + (f.length || 0), 0);
             }
             if (b2Used + gridUsed + req.file.buffer.length > storageLimit) {
-                return res.status(413).send("Storage limit of 1 GB exceeded");
+                return res.status(413).send("Storage limit of 5 GB exceeded");
             }
 
             const fileId = new ObjectId();
@@ -330,7 +330,7 @@ module.exports = (db, bucket) => {
     router.get('/storage/:userId', async (req, res) => {
         try {
             const userId = req.params.userId;
-            const storageLimit = 1073741824; 
+            const storageLimit = 5368709120; 
 
             const userFiles = await allFiles.find({ userId: userId });
 
@@ -376,7 +376,7 @@ module.exports = (db, bucket) => {
 
         try {
             const userFiles = await allFiles.find({ userId: req.apiUser._id });
-            const storageLimit = 1073741824; 
+            const storageLimit = 5368709120; 
 
             const b2Files = userFiles.filter(f => f.b2Key);
             const gridFiles = userFiles.filter(f => !f.b2Key);
@@ -539,7 +539,7 @@ module.exports = (db, bucket) => {
 
     router.get('/api/storage', validateApiKey, async (req, res) => {
         try {
-            const storageLimit = 1073741824; 
+            const storageLimit = 5368709120; 
             const userFiles = await allFiles.find({ userId: req.apiUser._id });
 
             if (userFiles.length === 0) {

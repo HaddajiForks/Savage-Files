@@ -291,7 +291,7 @@ const initialState = {
   apiKey: null,
   storageUsage: {
     used: 0,
-    total: 1073741824,
+    total: 5368709120,
     fileCount: 0
   },
   error: "",
@@ -311,7 +311,7 @@ export const userSlice = createSlice({
       state.apiKey = null
       state.storageUsage = {
         used: 0,
-        total: 1073741824,
+        total: 5368709120,
         fileCount: 0
       }
       state.error = ""
@@ -456,7 +456,7 @@ export const userSlice = createSlice({
       .addCase(getStorageUsage.fulfilled, (state, action) => {
         state.storageUsage = {
           used: action.payload.used || 0,
-          total: action.payload.total || 1073741824,
+          total: action.payload.total || 5368709120,
           fileCount: action.payload.fileCount || 0
         }
         state.loading = false
