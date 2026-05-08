@@ -348,34 +348,199 @@ function Profile() {
 
   if (user?.verified === false) {
     return (
-      <div className="app-container">
-        <div className="verification-banner" style={{
-          background: "linear-gradient(135deg, #1c0022 0%, #3a0050 100%)",
-          color: "#e0d6f6",
-          padding: "30px",
-          borderRadius: "12px",
-          margin: "40px auto",
-          maxWidth: "520px",
-          boxShadow: "0 8px 30px rgba(0, 0, 0, 0.5)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "20px",
-          border: "1px solid #4a006f",
-        }}>
-          <h3 style={{ margin: 0, color: "#ffc77d", letterSpacing: "1.5px", fontSize: "1.8rem" }}>
-            ⚠️ Action Required
-          </h3>
-          <p style={{ margin: 0, textAlign: "center", lineHeight: "1.5" }}>
-            Your email is not yet verified. Please check your inbox.
+      <div className="verify-page">
+        <div className="verify-bg" aria-hidden>
+          <div className="verify-bg-grid" />
+          <div className="verify-bg-orb verify-bg-orb-1" />
+          <div className="verify-bg-orb verify-bg-orb-2" />
+        </div>
+
+        <div className="verify-card">
+          <div className="verify-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+
+          <span className="verify-pill">
+            <span className="verify-pill-dot" />
+            Action required
+          </span>
+
+          <h1 className="verify-title">Verify your email</h1>
+          <p className="verify-sub">
+            We sent a verification link to <strong>{user?.email}</strong>.
+            Open it to unlock your storage and start uploading.
           </p>
-          <button
-            style={{ background: "linear-gradient(90deg, #a259ec 0%, #6f1e51 100%)", color: "#fff", border: "none", borderRadius: "8px", padding: "12px 30px", fontWeight: 700, fontSize: "1.1rem", cursor: "pointer" }}
-            onClick={handleResendVerification}
-          >
-            Resend Verification Email
+
+          <div className="verify-steps">
+            <div className="verify-step"><span>1</span> Check your inbox (and spam folder)</div>
+            <div className="verify-step"><span>2</span> Click the verification link</div>
+            <div className="verify-step"><span>3</span> Come back and refresh</div>
+          </div>
+
+          <button className="verify-resend" onClick={handleResendVerification}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Resend verification email
+          </button>
+
+          <button className="verify-logout" onClick={handleLogout}>
+            Sign out
           </button>
         </div>
+
+        <style>{`
+          .verify-page {
+            position: relative; min-height: 100vh;
+            display: grid; place-items: center;
+            padding: 1.5rem;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #ece8f7;
+          }
+          .verify-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+          .verify-bg-grid {
+            position: absolute; inset: 0;
+            background-image:
+              linear-gradient(rgba(168,85,247,.045) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(168,85,247,.045) 1px, transparent 1px);
+            background-size: 56px 56px;
+            mask-image: radial-gradient(ellipse at 50% 50%, #000 30%, transparent 75%);
+            -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 30%, transparent 75%);
+          }
+          .verify-bg-orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .5; }
+          .verify-bg-orb-1 { width: 520px; height: 520px; background: radial-gradient(circle, #7c3aed 0%, transparent 65%); top: -100px; left: -120px; }
+          .verify-bg-orb-2 { width: 480px; height: 480px; background: radial-gradient(circle, #fbbf24 0%, transparent 60%); bottom: -160px; right: -120px; opacity: .25; }
+
+          .verify-card {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 480px;
+            padding: 2.5rem 2.25rem;
+            background: rgba(14,10,28,.6);
+            border: 1px solid rgba(168,85,247,.20);
+            border-radius: 24px;
+            backdrop-filter: saturate(160%) blur(20px);
+            -webkit-backdrop-filter: saturate(160%) blur(20px);
+            box-shadow: 0 60px 120px -30px rgba(0,0,0,.75);
+            text-align: center;
+          }
+
+          .verify-icon {
+            width: 64px; height: 64px;
+            margin: 0 auto 1.25rem;
+            display: grid; place-items: center;
+            background: linear-gradient(135deg, rgba(251,191,36,.18), rgba(168,85,247,.10));
+            border: 1px solid rgba(251,191,36,.35);
+            border-radius: 18px;
+            color: #fbbf24;
+            box-shadow: 0 14px 34px -10px rgba(251,191,36,.45);
+          }
+          .verify-pill {
+            display: inline-flex; align-items: center; gap: .5rem;
+            padding: .3rem .8rem .3rem .55rem;
+            background: rgba(251,191,36,.10);
+            border: 1px solid rgba(251,191,36,.30);
+            border-radius: 999px;
+            color: #fbbf24;
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+          }
+          .verify-pill-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #fbbf24;
+            box-shadow: 0 0 0 4px rgba(251,191,36,.18);
+            animation: vfy-pulse 2s ease-in-out infinite;
+          }
+          @keyframes vfy-pulse {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(251,191,36,.18); }
+            50%      { box-shadow: 0 0 0 6px rgba(251,191,36,.06); }
+          }
+
+          .verify-title {
+            font-size: 1.6rem; font-weight: 700;
+            letter-spacing: -.4px;
+            margin: 0 0 .5rem;
+            color: #fff;
+          }
+          .verify-sub {
+            color: #a59bc4;
+            font-size: .92rem; line-height: 1.6;
+            margin: 0 0 1.75rem;
+          }
+          .verify-sub strong { color: #c084fc; font-weight: 600; }
+
+          .verify-steps {
+            text-align: left;
+            display: flex; flex-direction: column; gap: .55rem;
+            padding: 1rem 1.1rem;
+            background: rgba(0,0,0,.25);
+            border: 1px solid rgba(168,85,247,.14);
+            border-radius: 14px;
+            margin-bottom: 1.5rem;
+          }
+          .verify-step {
+            display: flex; align-items: center; gap: .7rem;
+            font-size: .85rem;
+            color: #c4b8dc;
+          }
+          .verify-step span {
+            display: inline-grid; place-items: center;
+            width: 22px; height: 22px;
+            font-size: .72rem; font-weight: 700;
+            background: rgba(168,85,247,.18);
+            border: 1px solid rgba(168,85,247,.32);
+            border-radius: 50%;
+            color: #c084fc;
+            flex-shrink: 0;
+          }
+
+          .verify-resend {
+            width: 100%;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: .5rem;
+            padding: .85rem 1rem;
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 60%, #6d28d9 100%);
+            border: none; border-radius: 13px;
+            color: #fff;
+            font-size: .92rem; font-weight: 600;
+            cursor: pointer;
+            box-shadow:
+              0 0 0 1px rgba(255,255,255,.08) inset,
+              0 14px 32px -10px rgba(124,58,237,.6);
+            transition: transform .12s ease, box-shadow .25s ease;
+            margin-bottom: .65rem;
+          }
+          .verify-resend:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset, 0 18px 40px -10px rgba(124,58,237,.8);
+          }
+          .verify-resend:active { transform: translateY(0) scale(.99); }
+
+          .verify-logout {
+            width: 100%;
+            background: transparent;
+            border: 1px solid rgba(168,85,247,.18);
+            border-radius: 11px;
+            color: #a59bc4;
+            font-size: .85rem; font-weight: 500;
+            padding: .65rem 1rem;
+            cursor: pointer;
+            transition: color .2s, background .2s, border-color .2s;
+          }
+          .verify-logout:hover {
+            color: #fff;
+            background: rgba(168,85,247,.10);
+            border-color: rgba(168,85,247,.32);
+          }
+
+          @media (max-width: 480px) {
+            .verify-card { padding: 2rem 1.5rem; }
+            .verify-title { font-size: 1.35rem; }
+          }
+        `}</style>
       </div>
     )
   }
